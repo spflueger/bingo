@@ -1,0 +1,9 @@
+{
+  "short_name": "Bingo App",
+  "name": "Multiplayer Bingo Game",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
