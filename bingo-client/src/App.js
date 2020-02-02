@@ -8,7 +8,7 @@ import Col from "react-bootstrap/Col";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const URL = "ws://v2202001112572107410.powersrv.de/bingo:85678";
+const URL = "ws://bingo.v2202001112572107410.powersrv.de:8080";
 
 /**
  * Shuffles array in place.
