@@ -30,7 +30,27 @@
   color: white;
 }
 
+.BoardRow {
+  height: 50px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.BoardCol {
+  width: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .Board {
-  height: 300px;
-  width: 300px;
+  height: 280px;
+  width: 280px;
+  justify-content: center;
+}
+
+.GameButton {
+  width: 120px;
 }
