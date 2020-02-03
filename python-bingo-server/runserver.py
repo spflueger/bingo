@@ -8,7 +8,7 @@ import websockets
 
 from server.server import handler
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.INFO)
 
 # ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 # bingo_pem = pathlib.Path(__file__).with_name("bingo.pem")
@@ -21,6 +21,10 @@ logging.basicConfig(level=logging.WARNING)
 start_server = websockets.serve(
     handler, "bingo.v2202001112572107410.powersrv.de", 8080
 )
+
+# start_server = websockets.serve(
+#     handler, "localhost", 8080
+# )
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()

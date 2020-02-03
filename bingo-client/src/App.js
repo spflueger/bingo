@@ -4,75 +4,17 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import InputGroup from "react-bootstrap/InputGroup";
+import FormControl from "react-bootstrap/FormControl";
+import ListGroup from "react-bootstrap/ListGroup";
+
+import { BingoBoard, PlayerList } from "./BingoGame";
 
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const URL = "ws://bingo.v2202001112572107410.powersrv.de:8080";
-
-/**
- * Shuffles array in place.
- * @param {Array} a items An array containing the items.
- */
-function shuffle(a) {
-  var j, x, i;
-  for (i = a.length - 1; i > 0; i--) {
-    j = Math.floor(Math.random() * (i + 1));
-    x = a[i];
-    a[i] = a[j];
-    a[j] = x;
-  }
-  return a;
-}
-
-class BingoBoard extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
-    const rows = [];
-    for (var row = 0; row < this.props.tiles_per_row; row++) {
-      const cols = [];
-      for (var col = 0; col < this.props.tiles_per_row; col++) {
-        const index = row * this.props.tiles_per_row + col;
-        cols.push(
-          <div className="BoardCol" key={"rowcol_" + row + "_" + col}>
-            <button
-              key={"tile_" + index}
-              className={(() => {
-                if (this.props.used_values[index]) {
-                  return "TileUsed";
-                } else {
-                  return "Tile";
-                }
-              })()}
-              disabled={this.props.disabled || this.props.used_values[index]}
-              onClick={() => this.props.submitMove(this.props.id, index)}
-            >
-              {this.props.values[index]}
-            </button>
-          </div>
-        );
-      }
-      rows.push(cols);
-    }
-
-    return (
-      <div className="Board">
-        {rows.map((cols, index) => {
-          return (
-            <div key={"row_" + index} className="BoardRow">
-              {cols.map(x => {
-                return x;
-              })}
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-}
+//const URL = "ws://localhost:8080";
 
 function NameForm(props) {
   // Declare a new state variable, which we'll call "count"
@@ -98,239 +40,233 @@ function NameForm(props) {
   );
 }
 
-function GameOverModal(props) {
-  var body_text = "";
-  const other_winners = props.winners.filter(value => value !== props.yourname);
-  if (props.winners.includes(props.yourname)) {
-    body_text = "You ";
-    if (other_winners.length > 0) body_text += " and ";
-  }
-  if (other_winners.length === 1) {
-    body_text += "Player " + other_winners[0];
-  } else if (other_winners.length > 1) {
-    body_text += "Players " + props.winners;
-  }
-  if (props.winners.length === 1 && !props.winners.includes(props.yourname)) {
-    body_text += " has won!";
-  } else {
-    body_text += " have won!";
-  }
+function NewGameModal(props) {
+  const [new_game_name, setName] = useState("");
+
   return (
-    <Modal show={props.winners.length > 0} onHide={props.newGame}>
+    <Modal show={props.show} onHide={() => props.setShow(false)}>
       <Modal.Header closeButton>
-        <Modal.Title>Game Over!</Modal.Title>
+        <Modal.Title>Create New Game</Modal.Title>
       </Modal.Header>
-      <Modal.Body>{body_text}</Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={props.newGame}>
-          New Game
-        </Button>
-      </Modal.Footer>
+      <Modal.Body>
+        <InputGroup className="mb-3">
+          <FormControl
+            value={new_game_name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Game Name"
+            aria-label="Game Name"
+            aria-describedby="basic-addon2"
+          />
+          <InputGroup.Append>
+            <Button
+              variant="outline-secondary"
+              onClick={() => {
+                props.setShow(false);
+                props.createNewGame(new_game_name);
+              }}
+            >
+              Create Game
+            </Button>
+          </InputGroup.Append>
+        </InputGroup>
+      </Modal.Body>
     </Modal>
+  );
+}
+
+function GameLobby(props) {
+  const [show_newgame_model, setShow] = useState(false);
+  console.log(props);
+  return (
+    <div className="Lobby">
+      <ListGroup>
+        {Object.keys(props.games).length === 0
+          ? "No games available"
+          : Object.keys(props.games).map(x => {
+              return (
+                <ListGroup.Item key={x}>
+                  <Container className="GameListEntry">
+                    <Row className="GameListRow">
+                      <Col xs="6">{x}</Col>
+                      <Col xs="6">
+                        <Button
+                          className="GameButton"
+                          disabled={props.games[x]}
+                          onClick={() => props.joinGame(x)}
+                        >
+                          Join Game
+                        </Button>
+                      </Col>
+                    </Row>
+                  </Container>
+                </ListGroup.Item>
+              );
+            })}
+      </ListGroup>
+      <Button
+        disabled={props.games.length === props.max_games}
+        onClick={() => setShow(true)}
+      >
+        Create New Game
+      </Button>
+      <PlayerList player_list={props.player_list} />
+      <NewGameModal
+        createNewGame={name => {
+          props.createNewGame(name);
+        }}
+        show={show_newgame_model}
+        setShow={setShow}
+      />
+    </div>
   );
 }
 
 class App extends React.Component {
   constructor(props) {
     super(props);
+    this.refresh = false;
     this.tiles_per_row = 5;
     this.state = {
-      my_name: "",
-      game_started: false,
-      players_turn: false,
-      winners: [],
-      player_list: [],
-      ready_players: [],
-      ready_button_text: "I'm ready!",
-      used_values: Array(this.tiles_per_row * this.tiles_per_row).fill(0),
-      values: (() => {
-        const a = [
-          ...Array(this.tiles_per_row * this.tiles_per_row).keys()
-        ].map(i => {
-          return i + 1;
-        });
-        shuffle(a);
-        return a;
-      })()
+      player_name: "",
+      connected: false,
+      game_list: {},
+      game_status: {},
+      active_game: "",
+      max_games: 3
     };
     this.ws = new WebSocket(URL);
   }
 
   componentDidMount() {
     this.ws.onopen = () => {
-      // on connecting, do nothing but log it to the console
-      console.log("connected");
+      this.setState({ connected: true });
     };
 
     this.ws.onmessage = evt => {
-      // on receiving a message, add it to the list of messages
       const message = JSON.parse(evt.data);
-      console.log("received data: " + message.command + " " + message.value);
-      if (message.command === "submit_move") {
-        this.receivedMove(parseInt(message.value));
-      } else if (message.command === "turn") {
-        this.setState({ players_turn: true });
-      } else if (message.command === "player_list") {
-        this.setState({ player_list: message.value });
-      } else if (message.command === "player_ready") {
+      console.log(
+        "received data: command:" +
+          message.command +
+          ", game_id:" +
+          message.game_id +
+          ", value:" +
+          message.value
+      );
+
+      if (message.command === "player_list") {
+        if (message.game_id === undefined)
+          this.setState({ player_list: message.value });
+      } else if (message.command === "game_list") {
         this.setState({
-          ready_players: message.value
+          game_status: message.game_id
         });
-      } else if (message.command === "game_started") {
-        this.setState({ values: message.value, game_started: true });
-      } else if (message.command === "game_over") {
-        this.setState({ winners: message.value });
-      } else if (message.command === "new_game") {
-        this.newGame();
+      } else if (message.command === "create_game") {
+        let new_game_status = { ...this.state.game_status };
+        new_game_status[message.game_id] = false;
+        this.setState({
+          game_status: new_game_status
+        });
+      } else if (message.command === "game_closed") {
+        // remove the game here
       }
     };
 
     this.ws.onclose = () => {
-      console.log("disconnected");
       // automatically try to reconnect on connection loss
       this.setState({
-        ws: new WebSocket(URL)
+        ws: new WebSocket(URL),
+        connected: false
       });
     };
   }
 
-  newGame() {
-    this.setState({
-      game_started: false,
-      players_turn: false,
-      winners: [],
-      ready_players: [],
-      ready_button_text: "I'm ready!",
-      used_values: Array(this.tiles_per_row * this.tiles_per_row).fill(0),
-      values: (() => {
-        const a = [
-          ...Array(this.tiles_per_row * this.tiles_per_row).keys()
-        ].map(i => {
-          return i + 1;
-        });
-        shuffle(a);
-        return a;
-      })()
-    });
-    this.ws.send(JSON.stringify({ command: "new_game", value: "" }));
-  }
-
-  // all of the actions with the websocket go here
-  submitMove(game_id, index) {
-    let new_used_values = [...this.state.used_values]; // create the copy of state array
-    new_used_values[index] = 1; //new value
-    this.setState({ used_values: new_used_values, players_turn: false });
-    const number = this.state.values[index];
-
-    console.log("submitting move " + number);
+  createNewGame(new_game_name) {
     this.ws.send(
-      JSON.stringify({ command: "submit_move", value: "" + number })
+      JSON.stringify({
+        game_id: new_game_name,
+        command: "create_game",
+        value: ""
+      })
     );
   }
 
-  // all of the actions with the websocket go here
-  receivedMove(number) {
-    const index = this.state.values.indexOf(number);
-    console.log(index);
-    if (this.state.used_values[index] === 0) {
-      let new_used_values = [...this.state.used_values]; // create the copy of state array
-      new_used_values[index] = 1; //new value
-      this.setState({ used_values: new_used_values, players_turn: true });
-    }
+  joinGame(game_name) {
+    this.ws.send(
+      JSON.stringify({ game_id: game_name, command: "join_game", value: null })
+    );
+
+    let new_game_list = { ...this.state.game_list };
+    new_game_list[game_name] = (
+      <BingoBoard
+        key={game_name}
+        id={game_name}
+        yourname={this.state.player_name}
+        websocket={this.ws}
+        tiles_per_row={this.tiles_per_row}
+        leaveGame={this.leaveGame.bind(this)}
+        refreshHook={this.refreshHook.bind(this)}
+      />
+    );
+    this.setState({
+      active_game: game_name,
+      game_list: new_game_list
+    });
   }
 
-  handleReady() {
-    console.log("calling handleReady");
-    const name = this.state.my_name;
-    if (this.isPlayerReady(name)) {
-      // player was ready but wants not ready
-      this.setState({
-        ready_button_text: "I'm ready!",
-        ready_players: [...this.state.ready_players].filter(
-          value => value !== name
-        )
-      });
-      this.ws.send(JSON.stringify({ command: "player_ready", value: [] }));
-    } else {
-      this.setState({
-        ready_button_text: "Not ready?",
-        ready_players: [...this.state.ready_players, name]
-      });
-      this.ws.send(
-        JSON.stringify({ command: "player_ready", value: this.state.values })
-      );
-    }
-  }
+  leaveGame() {
+    this.ws.send(
+      JSON.stringify({
+        game_id: this.state.active_game,
+        command: "leave_game",
+        value: null
+      })
+    );
 
-  isPlayerReady(name) {
-    const x = this.state.ready_players.filter(value => value === name);
-    return x.length > 0;
+    this.setState({
+      active_game: ""
+    });
   }
 
   handlePlayerName(name) {
-    this.setState({ my_name: name, player_list: [name] });
-    this.ws.send(JSON.stringify({ command: "set_name", value: name }));
+    this.setState({ player_name: name, player_list: [name] });
+    this.ws.send(
+      JSON.stringify({ game_id: null, command: "register", value: name })
+    );
+  }
+
+  refreshHook() {
+    this.refresh = true;
+  }
+
+  refreshLists() {
+    this.refresh = false;
+    this.ws.send(
+      JSON.stringify({ game_id: null, command: "refresh_lists", value: "" })
+    );
   }
 
   render() {
     console.log(this.state);
-    if (this.state.my_name === "") {
+    if (this.refresh) {
+      this.refreshLists();
+    }
+    if (this.state.player_name === "") {
       return <NameForm handleSubmit={this.handlePlayerName.bind(this)} />;
+    } else if (this.state.active_game in this.state.game_list) {
+      return (
+        <Container className="MainContent">
+          {this.state.game_list[this.state.active_game]}
+        </Container>
+      );
     } else {
       return (
-        <Container>
-          <Row>
-            <Col xs="12" md="8">
-              <BingoBoard
-                key={"game0"}
-                id={"game0"}
-                tiles_per_row={this.tiles_per_row}
-                used_values={this.state.used_values}
-                values={this.state.values}
-                disabled={!this.state.players_turn}
-                submitMove={this.submitMove.bind(this)}
-              />
-            </Col>
-            <Col sm="auto"></Col>
-          </Row>
-          <Row>
-            <Col xs="6" sm="4" md="3" xl="2">
-              <p>Game Status: {this.state.game_started ? "started" : "open"}</p>
-              <p>{this.state.players_turn ? "Your turn!" : ""}</p>
-              <p>
-                Player List:
-                {this.state.player_list.map((n, i) => {
-                  var label = n;
-                  if (this.state.ready_players.includes(n)) {
-                    label += " (ready)";
-                  }
-                  return <li key={"player" + i}>{label}</li>;
-                })}
-              </p>
-            </Col>
-            <Col xs="6" sm="4" md="3" xl="2">
-              <button
-                className="GameButton"
-                disabled={this.state.game_started}
-                onClick={() => this.handleReady.bind(this)()}
-              >
-                {this.state.ready_button_text}
-              </button>
-              <button
-                className="GameButton"
-                disabled={this.isPlayerReady(this.state.my_name)}
-                onClick={() => {
-                  this.setState({ values: shuffle(this.state.values) });
-                }}
-              >
-                {"Shuffle Tiles"}
-              </button>
-            </Col>
-          </Row>
-          <GameOverModal
-            winners={this.state.winners}
-            yourname={this.state.my_name}
-            newGame={this.newGame.bind(this)}
+        <Container className="MainContent">
+          <GameLobby
+            games={this.state.game_status}
+            player_list={this.state.player_list}
+            max_games={this.state.max_games}
+            createNewGame={this.createNewGame.bind(this)}
+            joinGame={this.joinGame.bind(this)}
           />
         </Container>
       );

@@ -54,3 +54,18 @@
 .GameButton {
   width: 120px;
 }
+
+.GameListEntry {
+  width: 280px;
+  flex-direction: row;
+}
+
+.GameListRow {
+  align-items: center;
+  justify-content: center;
+}
+
+.MainContent {
+  width: 280px;
+  justify-content: center;
+}
