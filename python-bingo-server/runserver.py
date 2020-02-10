@@ -18,13 +18,14 @@ logging.basicConfig(level=logging.INFO)
 #     handler, "bingo.v2202001112572107410.powersrv.de", 8080, ssl=ssl_context
 # )
 
+# start_server = websockets.serve(
+#     handler, "bingo.v2202001112572107410.powersrv.de", 8080
+# )
+
 start_server = websockets.serve(
-    handler, "bingo.v2202001112572107410.powersrv.de", 8080
+    handler, "localhost", 8080
 )
 
-# start_server = websockets.serve(
-#     handler, "localhost", 8080
-# )
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
