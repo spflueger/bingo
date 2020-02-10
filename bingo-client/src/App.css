@@ -8,8 +8,8 @@
 
 .Tile {
   background-color: #7e8ba3;
-  min-height: 50px;
-  min-width: 50px;
+  min-height: 60px;
+  min-width: 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -20,8 +20,8 @@
 
 .TileUsed {
   background-color: #282c34;
-  min-height: 50px;
-  min-width: 50px;
+  min-height: 60px;
+  min-width: 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -31,7 +31,7 @@
 }
 
 .BoardRow {
-  height: 50px;
+  height: 60px;
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -39,15 +39,17 @@
 }
 
 .BoardCol {
-  width: 50px;
+  width: 60px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
 .Board {
-  height: 280px;
-  width: 280px;
+  height: 300px;
+  width: 300px;
+  margin-top: 25px;
+  margin-left: 10px;
   justify-content: center;
 }
 
@@ -55,8 +57,14 @@
   width: 120px;
 }
 
+.GameButtonPadded {
+  width: 120px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
 .GameListEntry {
-  width: 280px;
+  width: 300px;
   flex-direction: row;
 }
 
@@ -66,6 +74,28 @@
 }
 
 .MainContent {
-  width: 280px;
+  width: 320px;
+  align-items: center;
+  justify-content: center;
+}
+
+.BelowMainContent {
+  width: 320px;
+  display: flex;
+  margin-top: 15px;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.BelowMainContentColumn {
+  width: 160px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.MainBody {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
   justify-content: center;
 }
