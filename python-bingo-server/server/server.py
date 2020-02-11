@@ -204,12 +204,9 @@ async def register(websocket, payload):
 
 
 async def update_name(websocket, payload):
-    uid = payload["id"]
-    # send list of games and list of players to the newly joined player
-    if uid in user_id_mapping.values():
-        user_id_name_mapping[uid] = payload["name"]
-        # newly logged in users get the full game and player lists
-        await send_player_list(connected_users)
+    uid = user_id_mapping[websocket]
+    user_id_name_mapping[uid] = payload
+    await send_player_list(connected_users)
 
 
 async def unregister(websocket):
@@ -338,6 +335,13 @@ async def handle_create_game(websocket, game_id):
         await send_game_list([websocket])
 
 
+async def send_message(websocket, payload):
+    await notify_users(
+        {'type': 'RECEIVE_MESSAGE',
+         'payload': payload
+         })
+
+
 input_commands = {
     "REGISTER": register,
     "CREATE_GAME": handle_create_game,
@@ -347,6 +351,7 @@ input_commands = {
     "SET_PLAYER_READY": handle_ready_player,
     "NEW_GAME": handle_new_game,
     "UPDATE_PLAYER_NAME": update_name,
+    "SEND_MESSAGE": send_message,
 }
 
 
@@ -356,7 +361,7 @@ async def handler(websocket, path):
         # cleanup games
         async for message in websocket:
             data = json.loads(message)
-            #logging.info("received message")
+            # logging.info("received message")
             # logging.info(data)
             if "type" in data:
                 if data["type"] in input_commands:
