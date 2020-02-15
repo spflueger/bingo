@@ -2,8 +2,9 @@ import React from "react";
 
 const PlayerList = props => {
   return (
-    <div>
-      Player List:
+    <div className="FullWidthContent">
+      <h5>Player List:</h5>
+
       {props.player_list.map(({ id, name }) => {
         var label = name;
         if (

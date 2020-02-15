@@ -87,10 +87,39 @@
   justify-content: center;
 }
 
-.BelowMainContentColumn {
+.BelowMainContentColumnLeft {
   width: 160px;
   margin-left: 10px;
   margin-right: 10px;
+}
+.BelowMainContentColumnRight {
+  width: 160px;
+  display: flex;
+  direction: rtl;
+  flex-direction: column;
+  justify-content: flex-end;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.ChatGroup {
+  width: 320px;
+  display: flex;
+  margin-top: 15px;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.FullWidthContent {
+  width: 100%;
+  display: flex;
+  margin-top: 15px;
+  flex-direction: column;
+}
+
+.ChatMessagesArea {
+  width: 100%;
+  resize: none;
 }
 
 .MainBody {

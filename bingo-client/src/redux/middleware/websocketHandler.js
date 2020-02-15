@@ -8,12 +8,13 @@ import {
   updateGameStatus,
   updatePlayerTurn,
   newGame,
-  leaveGame
+  receiveMessage
 } from "../actions";
 
 const setupSocket = (dispatch, userid, username) => {
   const socket = new WebSocket(
     "ws://bingo.v2202001112572107410.powersrv.de:8080"
+    //"ws://localhost:8080"
   );
 
   socket.onopen = () => {
@@ -29,8 +30,11 @@ const setupSocket = (dispatch, userid, username) => {
   };
   socket.onmessage = event => {
     const data = JSON.parse(event.data);
-    console.log("received message:", data);
+    //console.log("received message:", data);
     switch (data.type) {
+      case types.RECEIVE_MESSAGE:
+        dispatch(receiveMessage(data.payload));
+        break;
       case types.UPDATE_PLAYER_LIST:
         dispatch(updatePlayerList(data.payload));
         break;

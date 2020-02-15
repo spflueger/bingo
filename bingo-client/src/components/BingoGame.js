@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { connect } from "react-redux";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
@@ -12,7 +12,8 @@ import {
   setPlayerReady,
   sendMove,
   shuffleTiles,
-  toggleGameOverModal
+  toggleGameOverModal,
+  toggleGameRulesModal
 } from "../redux/actions";
 
 /**
@@ -31,21 +32,21 @@ export function shuffle(a) {
 }
 
 function GameRulesModal(props) {
-  const [show, setShow] = useState(true);
-
   return (
-    <Modal show={show} onHide={setShow(false)}>
+    <Modal show={props.show} onHide={() => props.toggleGameRules()}>
       <Modal.Header closeButton>
         <Modal.Title>Game Rules</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          Players take turn picking numbers. The first player with five full
-          rows, columns or diagonals wins.
+          Players take turns selecting numbers. Every number selected by one
+          player is also automatically selected by every other player. Hence all
+          players always have the same set of chosen numbers. The first player
+          with five complete rows, columns or diagonals wins. Good luck!
         </p>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={setShow(false)}>
+        <Button variant="secondary" onClick={() => props.toggleGameRules()}>
           Close
         </Button>
       </Modal.Footer>
@@ -159,7 +160,7 @@ const BingoBoard = props => {
       </div>
 
       <div className="BelowMainContent">
-        <div className="BelowMainContentColumn">
+        <div className="BelowMainContentColumnLeft">
           <p>Game Status: {props.game_status} </p>
           <p>
             {playersTurn(props) ? <font color="blue">"Your turn!"</font> : ""}
@@ -171,7 +172,7 @@ const BingoBoard = props => {
             ready_players={props.ready_players}
           />
         </div>
-        <div className="BelowMainContentColumn">
+        <div className="BelowMainContentColumnRight">
           <Button
             className="GameButtonPadded"
             disabled={
@@ -205,6 +206,12 @@ const BingoBoard = props => {
           </Button>
           <Button
             className="GameButtonPadded"
+            onClick={() => props.toggleGameRulesModal()}
+          >
+            {"Game Rules"}
+          </Button>
+          <Button
+            className="GameButtonPadded"
             onClick={() =>
               props.leaveGame({
                 game_id: props.game_id
@@ -215,6 +222,10 @@ const BingoBoard = props => {
           </Button>
         </div>
       </div>
+      <GameRulesModal
+        show={props.show_game_rules_modal}
+        toggleGameRules={props.toggleGameRulesModal}
+      />
       <GameOverModal
         show={props.show_game_over_modal}
         winners={props.winners}
@@ -227,18 +238,19 @@ const BingoBoard = props => {
 };
 
 const mapStateToProps = state => {
-  console.log("change state of bingo game?", state);
   return {
     game_id: state.gameLobby.active_game,
     game_status: state.bingoGame.game_status,
     show_game_over_modal: state.bingoGame.show_game_over_modal,
+    show_game_rules_modal: state.bingoGame.show_game_rules_modal,
     tiles_per_row: state.bingoGame.tiles_per_row,
     players_turn: state.bingoGame.players_turn,
     winners: state.bingoGame.winners,
     player_list: state.bingoGame.player_list,
     ready_players: state.bingoGame.ready_players,
     used_values: state.bingoGame.used_values,
-    values: state.bingoGame.values
+    values: state.bingoGame.values,
+    chat_messages: state.bingoGame.chat_messages
   };
 };
 
@@ -246,6 +258,7 @@ const mapDispatchToProps = {
   leaveGame,
   newGame,
   toggleGameOverModal,
+  toggleGameRulesModal,
   setPlayerReady,
   updatePlayerTurn,
   sendMove,

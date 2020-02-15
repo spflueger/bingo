@@ -6,7 +6,9 @@ import {
   UPDATE_GAME_STATUS,
   UPDATE_GAME_PLAYER_LIST,
   NEW_GAME,
+  RESET_GAME,
   TOGGLE_GAME_OVER_MODAL,
+  TOGGLE_GAME_RULES_MODAL,
   SHUFFLE_TILES
 } from "../actionTypes";
 import { shuffle } from "../../components/BingoGame";
@@ -16,6 +18,7 @@ const tiles_per_row = 5;
 const initialState = {
   game_status: "OPEN",
   show_game_over_modal: false,
+  show_game_rules_modal: false,
   players_turn: "",
   winners: [],
   player_list: [],
@@ -32,8 +35,27 @@ const initialState = {
   })()
 };
 
+const resetGame = (state, tiles_per_row) => {
+  return {
+    ...state,
+    game_status: "OPEN",
+    players_turn: "",
+    winners: [],
+    ready_players: [],
+    player_list: [...state.player_list],
+    used_values: Array(tiles_per_row * tiles_per_row).fill(0),
+    values: (() => {
+      const a = [...Array(tiles_per_row * tiles_per_row).keys()].map(i => {
+        return i + 1;
+      });
+      shuffle(a);
+      return a;
+    })()
+  };
+};
+
 export default function(state = initialState, action) {
-  console.log("action:", action, state);
+  //console.log("action:", action, state);
   switch (action.type) {
     case ADD_MOVE: {
       const number = action.payload.tile;
@@ -80,6 +102,12 @@ export default function(state = initialState, action) {
         show_game_over_modal: !state.show_game_over_modal
       };
     }
+    case TOGGLE_GAME_RULES_MODAL: {
+      return {
+        ...state,
+        show_game_rules_modal: !state.show_game_rules_modal
+      };
+    }
     case UPDATE_GAME_STATUS: {
       if (action.payload.status === "STARTED") {
         return {
@@ -103,23 +131,12 @@ export default function(state = initialState, action) {
       }
     }
 
+    case RESET_GAME: {
+      return resetGame(state, tiles_per_row);
+    }
+
     case NEW_GAME: {
-      return {
-        ...state,
-        game_status: "OPEN",
-        players_turn: "",
-        winners: [],
-        ready_players: [],
-        player_list: [...state.player_list],
-        used_values: Array(tiles_per_row * tiles_per_row).fill(0),
-        values: (() => {
-          const a = [...Array(tiles_per_row * tiles_per_row).keys()].map(i => {
-            return i + 1;
-          });
-          shuffle(a);
-          return a;
-        })()
-      };
+      return resetGame(state, tiles_per_row);
     }
 
     case SHUFFLE_TILES: {

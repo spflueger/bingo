@@ -19,6 +19,12 @@ const rootSaga = function* rootSaga(params) {
   yield takeEvery("NEW_GAME", action => {
     params.socket.send(JSON.stringify(action));
   });
+  yield takeEvery("UPDATE_PLAYER_NAME", action => {
+    params.socket.send(JSON.stringify(action));
+  });
+  yield takeEvery("SEND_MESSAGE", action => {
+    params.socket.send(JSON.stringify(action));
+  });
 };
 
 export default rootSaga;

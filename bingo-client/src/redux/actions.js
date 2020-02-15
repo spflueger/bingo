@@ -8,13 +8,28 @@ import {
   SEND_MOVE,
   UPDATE_PLAYER_TURN,
   UPDATE_PLAYER_READY,
+  UPDATE_PLAYER_NAME,
   UPDATE_GAME_STATUS,
   NEW_GAME,
+  RESET_GAME,
   TOGGLE_GAME_OVER_MODAL,
+  TOGGLE_GAME_RULES_MODAL,
   UPDATE_GAME_PLAYER_LIST,
   SHUFFLE_TILES,
-  SET_PLAYER_READY
+  SET_PLAYER_READY,
+  SEND_MESSAGE,
+  RECEIVE_MESSAGE
 } from "./actionTypes";
+
+export const sendMessage = payload => ({
+  type: SEND_MESSAGE,
+  payload: payload
+});
+
+export const receiveMessage = payload => ({
+  type: RECEIVE_MESSAGE,
+  payload: payload
+});
 
 export const createGame = name => ({
   type: CREATE_GAME,
@@ -61,6 +76,11 @@ export const updatePlayerTurn = userid => ({
   payload: userid
 });
 
+export const updatePlayerName = payload => ({
+  type: UPDATE_PLAYER_NAME,
+  payload: payload
+});
+
 export const updatePlayerReady = payload => ({
   type: UPDATE_PLAYER_READY,
   payload: payload
@@ -81,8 +101,18 @@ export const toggleGameOverModal = payload => ({
   payload: payload
 });
 
+export const toggleGameRulesModal = payload => ({
+  type: TOGGLE_GAME_RULES_MODAL,
+  payload: payload
+});
+
 export const newGame = game_id => ({
   type: NEW_GAME,
+  payload: game_id
+});
+
+export const resetGame = game_id => ({
+  type: RESET_GAME,
   payload: game_id
 });
 
