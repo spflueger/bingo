@@ -140,9 +140,9 @@ const BingoBoard = props => {
   }
 
   if (isPlayerReady(props.ready_players, props.userid)) {
-    ready_button_text = "Not ready?";
+    ready_button_text = "?Not ready";
   } else {
-    ready_button_text = "I'm ready!";
+    ready_button_text = "!I'm ready";
   }
 
   return (
