@@ -6,7 +6,7 @@ import websockets
 # import ssl
 # import pathlib
 
-from server.server import handler
+from server.server import handler, stale_game_gc
 
 logging.basicConfig(level=logging.INFO)
 
@@ -28,4 +28,5 @@ start_server = websockets.serve(
 
 
 asyncio.get_event_loop().run_until_complete(start_server)
+asyncio.get_event_loop().create_task(stale_game_gc(600))
 asyncio.get_event_loop().run_forever()

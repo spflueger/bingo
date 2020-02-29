@@ -100,28 +100,27 @@ async def notify_users(events, users=connected_users):
         await asyncio.wait([x.send(convert_to_message(y)) for (x, y) in events])
 
 
-async def stale_game_gc():
+async def stale_game_gc(sleeptime):
     from time import sleep
     while True:
         await remove_stale_games()
-        sleep(10)
+        await asyncio.sleep(sleeptime)
 
 
 async def remove_stale_games():
-    logging.info("running cleanup")
+    logging.debug("running cleanup")
     mark_for_delete = []
     for k, v in bingo_games.items():
         if not v.game_recently_active:
             mark_for_delete.append(k)
         else:
             v.game_recently_active = False
-
+    logging.debug(mark_for_delete)
     if len(mark_for_delete):
         for x in mark_for_delete:
             del bingo_games[x]
 
-        for x in connected_users:
-            await send_game_list(x)
+        await send_game_list(connected_users)
 
 
 async def join_game(websocket, game_id):
