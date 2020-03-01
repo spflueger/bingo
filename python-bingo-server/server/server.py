@@ -205,9 +205,6 @@ async def leave_game(websocket, payload):
         }
     }, users=bingo_game.players)
 
-    if(bingo_game.players == bingo_game.ready_players):
-        await start_game(game_id)
-
     if len(bingo_game.players) == 0:
         bingo_game.state = GameState.OPEN
     else:
@@ -216,6 +213,9 @@ async def leave_game(websocket, payload):
             await handle_new_game(list(bingo_game.players)[0], game_id)
         elif bingo_game.players_turn == websocket:
             await send_next_player_turn(game_id, undo=True)
+        elif (bingo_game.players == bingo_game.ready_players
+              and bingo_game.state == GameState.OPEN):
+            await start_game(game_id)
     await send_game_list(connected_users)
 
 
@@ -262,8 +262,6 @@ async def unregister(websocket):
 
     for game_id, bingo_game in bingo_games.items():
         if websocket in bingo_game.players:
-            del bingo_game.stats[websocket]
-            await send_game_stats(game_id)
             await leave_game(websocket, {"game_id": game_id})
     connected_users.remove(websocket)
 

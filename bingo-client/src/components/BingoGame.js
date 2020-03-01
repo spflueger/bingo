@@ -241,11 +241,13 @@ const BingoBoard = props => {
                 return (
                   <tr key={uid}>
                     <td>
-                      {
-                        props.player_list.find(x => {
-                          return uid === x.id;
-                        }).name
-                      }
+                      {props.player_list.find(x => {
+                        return uid === x.id;
+                      })
+                        ? props.player_list.find(x => {
+                            return uid === x.id;
+                          }).name
+                        : uid}
                     </td>
                     <td>{wins}</td>
                   </tr>
