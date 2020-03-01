@@ -163,9 +163,11 @@ const BingoBoard = props => {
       <div className="BelowMainContent">
         <div className="BelowMainContentColumnLeft">
           <p>Game Status: {props.game_status} </p>
+          <div className="TurnContainer">
           <p>
-            {playersTurn(props) ? <font color="red">"Your turn!"</font> : ""}
+            <font color="red">{playersTurn(props) ? "Your turn!" : "\n"}</font>
           </p>
+          </div>
           <PlayerList
             player_list={props.player_list}
             userid={props.userid}

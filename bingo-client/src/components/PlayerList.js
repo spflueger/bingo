@@ -7,7 +7,7 @@ const PlayerList = props => {
 
       {props.player_list.map(({ id, name }) => {
         var label = name;
-        if (props.winners) {
+        if (props.winners && props.winners.length > 0) {
           if (props.winners.includes(id)) {
             label += " (won)";
           }
