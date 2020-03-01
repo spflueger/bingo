@@ -18,7 +18,8 @@ import {
   SHUFFLE_TILES,
   SET_PLAYER_READY,
   SEND_MESSAGE,
-  RECEIVE_MESSAGE
+  RECEIVE_MESSAGE,
+  UPDATE_GAME_STATS
 } from "./actionTypes";
 
 export const sendMessage = payload => ({
@@ -103,6 +104,11 @@ export const toggleGameOverModal = payload => ({
 
 export const toggleGameRulesModal = payload => ({
   type: TOGGLE_GAME_RULES_MODAL,
+  payload: payload
+});
+
+export const updateGameStats = payload => ({
+  type: UPDATE_GAME_STATS,
   payload: payload
 });
 

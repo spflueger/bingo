@@ -23,7 +23,8 @@ logging.basicConfig(level=logging.INFO)
 # )
 
 start_server = websockets.serve(
-    handler, "localhost", 8080
+    handler, "localhost", 8080,
+    ping_interval=20, ping_timeout=20, close_timeout=20
 )
 
 

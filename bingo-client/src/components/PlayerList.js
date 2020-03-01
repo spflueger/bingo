@@ -7,14 +7,20 @@ const PlayerList = props => {
 
       {props.player_list.map(({ id, name }) => {
         var label = name;
-        if (
-          props.players_turn === "" &&
-          props.ready_players &&
-          props.ready_players.includes(id)
-        ) {
-          label += " (ready)";
-        } else if (props.players_turn !== "" && id === props.players_turn) {
-          label += " (turn)";
+        if (props.winners) {
+          if (props.winners.includes(id)) {
+            label += " (won)";
+          }
+        } else {
+          if (
+            props.players_turn === "" &&
+            props.ready_players &&
+            props.ready_players.includes(id)
+          ) {
+            label += " (ready)";
+          } else if (props.players_turn !== "" && id === props.players_turn) {
+            label += " (turn)";
+          }
         }
         if (props.userid === id) {
           label = <font color="blue">{label}</font>;

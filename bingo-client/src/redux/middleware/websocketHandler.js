@@ -8,13 +8,14 @@ import {
   updateGameStatus,
   updatePlayerTurn,
   newGame,
-  receiveMessage
+  receiveMessage,
+  updateGameStats
 } from "../actions";
 
 const setupSocket = (dispatch, userid, username) => {
   const socket = new WebSocket(
-    "ws://bingo.v2202001112572107410.powersrv.de:8080"
-    //"ws://localhost:8080"
+    //"ws://bingo.v2202001112572107410.powersrv.de:8080"
+    "ws://localhost:8080"
   );
 
   socket.onopen = () => {
@@ -58,6 +59,9 @@ const setupSocket = (dispatch, userid, username) => {
         break;
       case types.NEW_GAME:
         dispatch(newGame(data.payload));
+        break;
+      case types.UPDATE_GAME_STATS:
+        dispatch(updateGameStats(data.payload));
         break;
       default:
         break;

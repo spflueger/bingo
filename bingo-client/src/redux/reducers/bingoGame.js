@@ -9,7 +9,8 @@ import {
   RESET_GAME,
   TOGGLE_GAME_OVER_MODAL,
   TOGGLE_GAME_RULES_MODAL,
-  SHUFFLE_TILES
+  SHUFFLE_TILES,
+  UPDATE_GAME_STATS
 } from "../actionTypes";
 import { shuffle } from "../../components/BingoGame";
 
@@ -21,6 +22,7 @@ const initialState = {
   show_game_rules_modal: false,
   players_turn: "",
   winners: [],
+  stats: [],
   player_list: [],
   ready_players: [],
   tiles_per_row: tiles_per_row,
@@ -42,6 +44,7 @@ const resetGame = (state, tiles_per_row) => {
     players_turn: "",
     winners: [],
     ready_players: [],
+    show_game_over_modal: false,
     player_list: [...state.player_list],
     used_values: Array(tiles_per_row * tiles_per_row).fill(0),
     values: (() => {
@@ -128,6 +131,12 @@ export default function(state = initialState, action) {
           ...state,
           game_status: action.payload.status
         };
+      }
+    }
+    case UPDATE_GAME_STATS: {
+      return {
+        ...state,
+        stats: action.payload.stats
       }
     }
 

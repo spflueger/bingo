@@ -29,6 +29,8 @@ class BingoGame:
         self.players_turn_index = None
         self.players_turn = None
         self.state = GameState.OPEN
+        self.stats = {}
+        self.total_played_games = 0
 
     def new_game(self):
         self.ready_players = set()
@@ -123,8 +125,42 @@ async def remove_stale_games():
         await send_game_list(connected_users)
 
 
+async def send_game_stats(game_id):
+    for x in bingo_games[game_id].stats.keys():
+        if x not in user_id_mapping:
+            del bingo_games[game_id].stats[x]
+    await notify_users({
+        'type': 'UPDATE_GAME_STATS',
+        'payload': {
+                'game_id': game_id,
+                'stats': [
+                    {"uid": user_id_mapping[x], "wins": y}
+                    for x, y in bingo_games[game_id].stats.items()
+                ]
+        }
+    }, users=bingo_games[game_id].players)
+
+
+async def start_game(game_id):
+    bingo_game = bingo_games[game_id]
+    bingo_game.state = GameState.ONGOING
+    await send_game_list(connected_users)
+    await notify_users(
+        [(x,
+            {'type': 'UPDATE_GAME_STATUS',
+             'payload': {
+                 'game_id': game_id,
+                 'status': "STARTED",
+                 'values': bingo_game.boards[x].tiles
+             }}) for x in bingo_game.players]
+    )
+
+    await send_next_player_turn(game_id)
+
+
 async def join_game(websocket, game_id):
     if game_id and bingo_games[game_id].state is GameState.OPEN:
+        bingo_games[game_id].stats[websocket] = 0
         bingo_games[game_id].players.add(websocket)
         await notify_users(
             {'type': 'UPDATE_GAME_PLAYER_LIST',
@@ -134,16 +170,24 @@ async def join_game(websocket, game_id):
              } for x in bingo_games[game_id].players]
              },
             users=bingo_games[game_id].players)
+        await send_game_stats(game_id)
 
 
 async def leave_game(websocket, payload):
     game_id = payload["game_id"]
     bingo_game = bingo_games[game_id]
     try:
+        del bingo_game.stats[websocket]
+    except:
+        pass
+    try:
         bingo_game.players.remove(websocket)
         bingo_game.ready_players.remove(websocket)
     except:
         pass
+
+    if len(bingo_game.players) > 0:
+        await send_game_stats(game_id)
 
     await notify_users(
         {'type': 'UPDATE_GAME_PLAYER_LIST',
@@ -161,13 +205,17 @@ async def leave_game(websocket, payload):
         }
     }, users=bingo_game.players)
 
+    if(bingo_game.players == bingo_game.ready_players):
+        await start_game(game_id)
+
     if len(bingo_game.players) == 0:
         bingo_game.state = GameState.OPEN
-    elif len(bingo_game.players) == 1:
-        bingo_game.state = GameState.FINISHED
-        await handle_new_game(list(bingo_game.players)[0], game_id)
-    elif bingo_game.players_turn == websocket:
-        await send_next_player_turn(game_id, undo=True)
+    else:
+        if len(bingo_game.players) == 1:
+            bingo_game.state = GameState.FINISHED
+            await handle_new_game(list(bingo_game.players)[0], game_id)
+        elif bingo_game.players_turn == websocket:
+            await send_next_player_turn(game_id, undo=True)
     await send_game_list(connected_users)
 
 
@@ -214,6 +262,8 @@ async def unregister(websocket):
 
     for game_id, bingo_game in bingo_games.items():
         if websocket in bingo_game.players:
+            del bingo_game.stats[websocket]
+            await send_game_stats(game_id)
             await leave_game(websocket, {"game_id": game_id})
     connected_users.remove(websocket)
 
@@ -257,18 +307,22 @@ async def handle_move(websocket, payload):
                 'tile': tile
             }
         })
-        winners = [user_id_mapping[x]
-                   for x, y in bingo_game.boards.items() if y.has_won()]
+        winners = [x for x, y in bingo_game.boards.items()
+                   if y.has_won()]
         if winners:
+            bingo_game.total_played_games += 1
+            for x in winners:
+                bingo_game.stats[x] += 1
             bingo_game.state = GameState.FINISHED
             await notify_users({
                 'type': 'UPDATE_GAME_STATUS',
                 'payload': {
                         'game_id': game_id,
                         'status': "FINISHED",
-                        'winners': winners
+                        'winners': [user_id_mapping[x] for x in winners]
                 }
             })
+            await send_game_stats(game_id)
         else:
             await send_next_player_turn(game_id)
 
@@ -300,19 +354,7 @@ async def handle_ready_player(websocket, payload):
             }
         })
         if bingo_game.players == bingo_game.ready_players:
-            bingo_game.state = GameState.ONGOING
-            await send_game_list(connected_users)
-            await notify_users(
-                [(x,
-                  {'type': 'UPDATE_GAME_STATUS',
-                   'payload': {
-                       'game_id': game_id,
-                       'status': "STARTED",
-                       'values': bingo_game.boards[x].tiles
-                   }}) for x in bingo_game.players]
-            )
-
-            await send_next_player_turn(game_id)
+            await start_game(game_id)
 
 
 async def handle_new_game(websocket, game_id):

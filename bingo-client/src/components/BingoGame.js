@@ -2,6 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
+import Table from "react-bootstrap/Table";
 
 import PlayerList from "./PlayerList";
 
@@ -163,13 +164,14 @@ const BingoBoard = props => {
         <div className="BelowMainContentColumnLeft">
           <p>Game Status: {props.game_status} </p>
           <p>
-            {playersTurn(props) ? <font color="blue">"Your turn!"</font> : ""}
+            {playersTurn(props) ? <font color="red">"Your turn!"</font> : ""}
           </p>
           <PlayerList
             player_list={props.player_list}
             userid={props.userid}
             players_turn={props.players_turn}
             ready_players={props.ready_players}
+            winners={props.winners}
           />
         </div>
         <div className="BelowMainContentColumnRight">
@@ -222,6 +224,36 @@ const BingoBoard = props => {
           </Button>
         </div>
       </div>
+      <div className="MainContent">
+        <h5>Scoreboard:</h5>
+        <Table striped hover>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Wins</th>
+            </tr>
+          </thead>
+          <tbody>
+            {props.stats
+              .slice()
+              .sort((x1, x2) => x2.wins - x1.wins)
+              .map(({ uid, wins }) => {
+                return (
+                  <tr key={uid}>
+                    <td>
+                      {
+                        props.player_list.find(x => {
+                          return uid === x.id;
+                        }).name
+                      }
+                    </td>
+                    <td>{wins}</td>
+                  </tr>
+                );
+              })}
+          </tbody>
+        </Table>
+      </div>
       <GameRulesModal
         show={props.show_game_rules_modal}
         toggleGameRules={props.toggleGameRulesModal}
@@ -250,7 +282,8 @@ const mapStateToProps = state => {
     ready_players: state.bingoGame.ready_players,
     used_values: state.bingoGame.used_values,
     values: state.bingoGame.values,
-    chat_messages: state.bingoGame.chat_messages
+    chat_messages: state.bingoGame.chat_messages,
+    stats: state.bingoGame.stats
   };
 };
 
