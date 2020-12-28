@@ -5,6 +5,7 @@ import logging
 import websockets
 # import ssl
 # import pathlib
+import socket
 
 from server.server import handler, stale_game_gc
 
@@ -21,9 +22,9 @@ logging.basicConfig(level=logging.INFO)
 # start_server = websockets.serve(
 #     handler, "bingo.v2202001112572107410.powersrv.de", 8080
 # )
-
+ip_address = socket.gethostbyname(socket.gethostname())
 start_server = websockets.serve(
-    handler, "localhost", 8080,
+    handler, ip_address, 8080,
     ping_interval=20, ping_timeout=20, close_timeout=20
 )
 
