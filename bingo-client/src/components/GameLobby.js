@@ -98,7 +98,7 @@ function GameLobby({
   const [show_newgame_model, setShow] = useState(false);
 
   return (
-    <div className="Lobby">
+    <div className="col col-md-6">
       <ListGroup>
         {game_list.length === 0
           ? "No games available"

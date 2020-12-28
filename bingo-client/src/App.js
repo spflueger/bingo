@@ -14,28 +14,20 @@ const App = props => {
     props.game_list.filter(game => game.key === props.active_game).length > 0
   ) {
     return (
-      <div className="MainBody">
-        <div />
-        <div className="MainContent">
+      <div class="container MainBody">
+        <div class="row">
           <BingoBoard userid={props.userid} />
-          <div className="BelowMainContent">
-            <ChatWindow userid={props.userid} />
-          </div>
+          <ChatWindow userid={props.userid} />
         </div>
-        <div />
       </div>
     );
   } else {
     return (
-      <div className="MainBody">
-        <div />
-        <div className="MainContent">
+      <div class="container MainBody">
+        <div class="row">
           <GameLobby userid={props.userid} />
-          <div className="BelowMainContent">
-            <ChatWindow userid={props.userid} />
-          </div>
+          <ChatWindow userid={props.userid} />
         </div>
-        <div />
       </div>
     );
   }

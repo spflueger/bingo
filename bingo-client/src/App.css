@@ -103,7 +103,7 @@
 }
 
 .ChatGroup {
-  width: 320px;
+  width: 100%;
   display: flex;
   margin-top: 15px;
   flex-direction: column;
@@ -118,7 +118,7 @@
 }
 
 .ChatMessagesArea {
-  width: 100%;
+  width: 320px;
   resize: none;
 }
 

@@ -147,7 +147,7 @@ const BingoBoard = props => {
   }
 
   return (
-    <div>
+    <div className="col col-md-6">
       <div className="Board">
         {rows.map((cols, index) => {
           return (

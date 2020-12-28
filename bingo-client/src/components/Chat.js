@@ -19,7 +19,7 @@ const ChatWindow = props => {
   const CHAR_LIMIT = 70;
 
   return (
-    <div>
+    <div className="col">
       <h5>Chat:</h5>
       <InputGroup
         className="ChatGroup"
